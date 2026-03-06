@@ -8,6 +8,7 @@ from models.users import User
 from schemas.users import UserCreate, UserUpdate
 
 
+# 1. 创建用户
 async def create_user(db: AsyncSession, user: UserCreate) -> User:
     db_user = User(
         username=user.username,
@@ -71,3 +72,15 @@ async def delete_user(db: AsyncSession, user_id: int) -> bool:
     await db.delete(db_user)
     await db.commit()
     return True
+
+
+# 8. 用户登录
+async def login(db: AsyncSession, username: str, password: str, role: int) -> Optional[User]:
+    db_user = await get_user_by_username(db, username)
+    if not db_user:
+        return None
+    if db_user.password != password:
+        return None
+    if db_user.role != role:
+        return None
+    return db_user

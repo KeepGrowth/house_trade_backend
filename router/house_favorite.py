@@ -4,10 +4,13 @@ from typing import List
 
 from config.mysql_config import get_database
 from crud.house_favorite import *
+from utils.auth import get_current_user
 
 router = APIRouter(
     prefix="/favorites",
     tags=["房源收藏管理"],
+    # 全局鉴权，非登录不可获取。
+    dependencies=[Depends(get_current_user)]
 )
 
 

@@ -38,3 +38,8 @@ class HouseInfo(Base):
     # 时间戳
     create_time: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.now, comment="发布时间")
     update_time: Mapped[Optional[datetime]] = mapped_column(DateTime, onupdate=datetime.now, comment="修改时间")
+
+    # 反向映射
+    user = relationship("User", back_populates="house_info")
+    reviews = relationship("Review", back_populates="house_info")
+    favorites = relationship("Favorite", back_populates="house_info")

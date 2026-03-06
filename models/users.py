@@ -1,5 +1,8 @@
 from sqlalchemy import func, Date, DateTime, String, Integer, ForeignKey, Column, SmallInteger
 from typing import Optional
+
+from sqlalchemy.orm import relationship
+
 from config.mysql_config import Base, mapped_column, Mapped
 from datetime import date, datetime
 
@@ -23,14 +26,10 @@ class User(Base):
                                       comment="用户角色：1-普通用户/购房者，2-房东，3-管理员")
     avatar: Mapped[Optional[str]] = mapped_column(String(255), comment="用户头像地址")
     create_time: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.now, comment="注册时间")
-    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime, onupdate=datetime.now, comment="信息修改时间")
+    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime, default=datetime.now,onupdate=datetime.now, comment="信息修改时间")
 
+    # 反向映射
+    reviews = relationship("Review", back_populates="user", cascade="all, delete-orphan")
+    house_info = relationship("HouseInfo", back_populates="user", cascade="all, delete-orphan")  # ✅ 正确
+    favorites = relationship("Favorite", back_populates="user", cascade="all, delete-orphan")
 
-# 用户-token类
-class UserToken(Base):
-    __tablename__ = "user_token"
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, comment="token_id")
-    user_id: Mapped[int] = mapped_column(ForeignKey("user_info.user_id"), nullable=False, comment="用户id")
-    token: Mapped[str] = mapped_column(String(500), nullable=False, comment="token")
-    expires_time: Mapped[datetime] = mapped_column(DateTime, nullable=False, comment="过期时间")
-    create_time: Mapped[datetime] = mapped_column(DateTime, default=func.now(), comment="创建时间")

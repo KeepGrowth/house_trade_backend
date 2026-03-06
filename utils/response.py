@@ -11,3 +11,13 @@ def success_response(message: str = "success", data=None):
         "data": data
     }
     return JSONResponse(content=jsonable_encoder(content))
+
+
+# 错误响应
+def error_response(message: str = "error", data=None):
+    content = {
+        "code": 400,
+        "message": message,
+        "data": data
+    }
+    return JSONResponse(content=jsonable_encoder(content))

@@ -4,10 +4,13 @@ from typing import List
 
 from config.mysql_config import get_database
 from crud.user_review import *
+from utils.auth import get_current_user
 
 router = APIRouter(
     prefix="/reviews",
     tags=["房源评价管理"],
+    dependencies=[Depends(get_current_user)]
+
 )
 
 

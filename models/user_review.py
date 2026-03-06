@@ -38,4 +38,4 @@ class Review(Base):
 
     # 关系映射
     user: Mapped["User"] = relationship("User", back_populates="reviews")
-    house: Mapped["HouseInfo"] = relationship("House", back_populates="reviews")
+    house_info: Mapped["HouseInfo"] = relationship("HouseInfo", back_populates="reviews")

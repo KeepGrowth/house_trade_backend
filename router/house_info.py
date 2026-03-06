@@ -5,11 +5,14 @@ from typing import List, Optional
 from config.mysql_config import get_database
 # 导入CRUD、模型、数据库依赖
 from crud.house_info import *
+from utils.auth import get_current_user
 
 router = APIRouter(
     prefix="/houses",
     tags=["房源管理"],
     responses={404: {"description": "房源不存在"}},
+    # 全局鉴权，非登录不可获取。
+    dependencies=[Depends(get_current_user)]
 )
 
 

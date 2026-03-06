@@ -35,4 +35,4 @@ class Favorite(Base):
 
     # 关系映射
     user: Mapped["User"] = relationship("User", back_populates="favorites")
-    house: Mapped["HouseInfo"] = relationship("House", back_populates="favorites")
+    house_info: Mapped["HouseInfo"] = relationship("HouseInfo", back_populates="favorites")
