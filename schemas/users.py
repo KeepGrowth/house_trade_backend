@@ -20,7 +20,6 @@ class UserLogin(BaseModel):
 class UserCreate(BaseModel):
     username: str
     password: str
-    real_name: Optional[str] = Field(None, alias="realName")
     phone: str = Field(None, alias="phone")
     role: Optional[int] = Field(None, alias="role")
     avatar: Optional[str] = Field(None, alias="avatar")
@@ -31,7 +30,7 @@ class UserCreate(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    real_name: Optional[str] = None
+    user_id: Optional[int] = Field(None, alias="userId")
     phone: Optional[str] = None
     role: Optional[int] = None
     avatar: Optional[str] = None
@@ -46,8 +45,7 @@ class UserUpdate(BaseModel):
 class SafeUserResponse(BaseModel):
     user_id: int = Field(None, alias="userId")
     username: str = Field(None, alias="username")
-    real_name: Optional[str] = Field(None, alias="realName")
-    phone: str = Field(None, alias="phone")
+    phone: Optional[str] = Field(None, alias="phone")
     role: int = Field(None, alias="role")
     avatar: Optional[str] = Field(None, alias="avatar")
     model_config = ConfigDict(

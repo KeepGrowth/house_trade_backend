@@ -12,7 +12,7 @@ from fastapi import FastAPI
 from models.base import Base
 
 # ---------------------------------------需要先导入包，才能在lifespan中创建所有的数据库表---------------------------------
-from models import users, house_info, house_image, user_review,house_favorite
+from models import base
 
 # 数据库配置
 ASYNC_DATABASE_URL = "mysql+aiomysql://root:mysql_bhjbrr@192.168.1.86:3306/house_price_trade_system"

@@ -4,7 +4,7 @@ from typing import List, Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models.users import User
+from models.base import User
 from schemas.users import UserCreate, UserUpdate
 
 
@@ -13,7 +13,6 @@ async def create_user(db: AsyncSession, user: UserCreate) -> User:
     db_user = User(
         username=user.username,
         password=user.password,  # 生产环境请先加密！
-        real_name=user.real_name,
         phone=user.phone,
         role=user.role,
         avatar=user.avatar
@@ -75,12 +74,21 @@ async def delete_user(db: AsyncSession, user_id: int) -> bool:
 
 
 # 8. 用户登录
-async def login(db: AsyncSession, username: str, password: str, role: int) -> Optional[User]:
+async def login(db: AsyncSession, username: str, password: str) -> Optional[User]:
     db_user = await get_user_by_username(db, username)
     if not db_user:
         return None
     if db_user.password != password:
         return None
-    if db_user.role != role:
+    return db_user
+
+
+# 9. 更新用户头像
+async def update_user_avatar(db: AsyncSession, user_id: int, avatar: str) -> Optional[User]:
+    db_user = await get_user_by_id(db, user_id)
+    if not db_user:
         return None
+    db_user.avatar = avatar
+    await db.commit()
+    await db.refresh(db_user)
     return db_user
