@@ -31,8 +31,6 @@ async def get_houses_api(
 ):
     """获取房源列表"""
     houses = await get_houses(db)
-    for house in houses:
-        print(house.images)
     houses_list = [HouseResponse().model_validate(house) for house in houses]
     res_data = HouseListResponse(houses=houses_list, total=len(houses))
     return success_response(message="获取成功", data=res_data)
@@ -42,14 +40,29 @@ async def get_houses_api(
 @router.get("/recommend", summary="获取推荐房源", status_code=status.HTTP_200_OK)
 async def get_recommend_houses_api(
         db: AsyncSession = Depends(get_database),
-        params: dict = None
+        params: dict = Body(None, title="查询参数")
 ):
     """获取推荐房源"""
     if params is None:
         params = {}
-    houses = await get_houses(db, params=params)
+    total, houses = await get_houses(db, params=params)
     houses_list = [HouseResponse().model_validate(house) for house in houses]
-    res_data = HouseListResponse(houses=houses_list, total=len(houses))
+    res_data = HouseListResponse(houses=houses_list, total=total)
+    return success_response(message="获取成功", data=res_data)
+
+
+# 条件查询房源
+@router.post("/query", summary="条件查询房源", status_code=status.HTTP_200_OK)
+async def get_recommend_houses_api(
+        db: AsyncSession = Depends(get_database),
+        params: dict = Body(None, title="查询参数")
+):
+    """条件查询房源"""
+    if params is None:
+        params = {}
+    total, houses = await get_houses(db, params=params)
+    houses_list = [HouseResponse().model_validate(house) for house in houses]
+    res_data = HouseListResponse(houses=houses_list, total=total)
     return success_response(message="获取成功", data=res_data)
 
 

@@ -1,7 +1,7 @@
 # 1. 创建用户
 from typing import List, Optional
 
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.base import User
@@ -41,10 +41,40 @@ async def get_user_by_phone(db: AsyncSession, phone: str) -> Optional[User]:
     return result.scalar_one_or_none()
 
 
-# 5. 查询所有用户（分页）
-async def get_users(db: AsyncSession, skip: int = 0, limit: int = 10) -> List[User]:
-    result = await db.execute(select(User).offset(skip).limit(limit))
+# 查询所有用户
+async def get_all_users(
+        db: AsyncSession
+):
+    result = await db.execute(select(User))
     return result.scalars().all()
+
+
+# 5. 查询所有用户（分页）
+async def get_users(
+        db: AsyncSession,
+        page: int = 1,
+        page_size: int = 10,
+        role: int = None,
+        username: str = None
+):
+    """
+    分页条件查询用户
+    :param db:
+    :param page:
+    :param page_size:
+    :param role: 角色
+    :param username: 用户名
+    :return:
+    """
+    query = select(User)
+    if role:
+        query = query.where(User.role == role)
+    if username:
+        query = query.where(User.username.like(f"%{username}%"))
+    result = await db.execute(query.offset((page - 1) * page_size).limit(page_size))
+    total_query = select(func.count(User.user_id)).select_from(User)
+    total = await db.execute(total_query)
+    return total.scalar_one(), result.scalars().all()
 
 
 # 6. 更新用户信息

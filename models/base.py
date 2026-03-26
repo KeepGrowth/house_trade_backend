@@ -56,7 +56,7 @@ class House(Base):
     __tablename__ = "houses"
 
     house_id = Column(Integer, primary_key=True, autoincrement=True, comment="房源ID")
-    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False, comment="关联发布者ID")
+    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False, comment="关联发布者ID")
     title = Column(String(100), nullable=False, comment="房源标题")
     price = Column(DECIMAL(10, 2), nullable=False, comment="总价（万元）")
     area = Column(DECIMAL(6, 2), nullable=False, comment="面积（㎡）")

@@ -49,6 +49,7 @@ class HouseResponse(HouseCreate):
     seller_info: Optional[dict] = Field(None, alias="sellerInfo")
     review_info: Optional[List] = Field(None, alias="reviewInfo")
     images: Optional[List[HouseImageReponse]] = Field(None, alias="imageUrls")
+    audit_status: Optional[int] = Field(None, alias="auditStatus")
 
     model_config = ConfigDict(
         populate_by_name=True,  # alias 、字段名兼容
@@ -60,6 +61,7 @@ class HouseResponse(HouseCreate):
 class HouseListResponse(BaseModel):
     houses: list[HouseResponse] = Field(None, alias="houses")
     total: int = Field(None, alias="total")
+    images: Optional[List[HouseImageReponse]] = Field(None, alias="imageUrls")
     model_config = ConfigDict(
         populate_by_name=True,  # alias 、字段名兼容
         from_attributes=True  # 允许从ORM对象属性中取值

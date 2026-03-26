@@ -1,9 +1,12 @@
 # ------------------------------
 # Pydantic 模型（用于接口参数）
 # ------------------------------
-from typing import Optional
+from datetime import datetime
+from typing import Optional, List
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from models.base import User
 
 
 # 用户登录参数
@@ -48,10 +51,17 @@ class SafeUserResponse(BaseModel):
     phone: Optional[str] = Field(None, alias="phone")
     role: int = Field(None, alias="role")
     avatar: Optional[str] = Field(None, alias="avatar")
+    create_time: Optional[datetime] = Field(None, alias="createTime")
     model_config = ConfigDict(
         populate_by_name=True,  # alias 、字段名兼容
         from_attributes=True  # 允许从ORM对象属性中取值
     )
+
+
+# 用户列表信息
+class UserListResponse(BaseModel):
+    total: int = Field(None, alias="total")
+    user_list: List[SafeUserResponse] = Field(None, alias="users")
 
 
 # 用户令牌信息响应

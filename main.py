@@ -9,7 +9,7 @@ from starlette.staticfiles import StaticFiles
 
 from config.mysql_config import lifespan
 from crud.house_images import create_house_image
-from router import auth, users, houses
+from router import auth, users, houses, admin, reviews, dashboard
 from utils.auth import get_current_user
 from utils.response import success_response
 
@@ -18,6 +18,9 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(users.router)
 app.include_router(auth.router)
 app.include_router(houses.router)
+app.include_router(admin.router)
+app.include_router(reviews.router)
+app.include_router(dashboard.router)
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
