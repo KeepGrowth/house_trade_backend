@@ -7,6 +7,7 @@ from sqlalchemy.orm import selectinload
 
 from crud.users import get_user_by_id
 from models.base import House, Review
+from utils.itemCF import get_recommend_houses_list
 
 
 # 获取所有房源
@@ -20,8 +21,6 @@ async def get_all_houses(
 # 条件查询获取房源列表
 async def get_houses(
         db: AsyncSession,
-        page: int = 1,
-        page_size: int = 10,
         params: Optional[dict] = None
 ):
     """
@@ -33,9 +32,6 @@ async def get_houses(
     4. 修复 audit_status 为 0 时无法查询的问题。
     5. 确保计数查询不包含 offset/limit/options。
     """
-    # 基础参数校验
-    page = max(page, 1)
-    page_size = max(page_size, 1)
 
     if params is None:
         params = {}
@@ -53,16 +49,12 @@ async def get_houses(
     # 2. 包含查询优化：district
     district_val = params.get("district")
     if district_val:
-        if isinstance(district_val, str):
-            district_list = [d.strip() for d in district_val.split(',') if d.strip()]
-        else:
-            district_list = district_val
-
-        if district_list:
-            base_query = base_query.where(House.district.in_(district_list))
+        # 加上 % 表示“包含”
+        pattern = f"%{district_val}%"
+        base_query = base_query.where(House.district.like(pattern))
 
     # 3. 包含查询优化：house_type
-    house_type_val = params.get("house_type")
+    house_type_val = params.get("houseTypeLabel")
     if house_type_val:
         if isinstance(house_type_val, str):
             house_type_list = [t.strip() for t in house_type_val.split(',') if t.strip()]
@@ -126,15 +118,7 @@ async def get_houses(
         query = query.order_by(House.house_id.desc())
 
     # 应用分页
-    query = query.offset((page - 1) * page_size).limit(page_size)
-
-    # --- 构建总数统计查询 ---
-    # 从 base_query 克隆，移除可能的默认排序（如果有），替换为 count
-    # 注意：base_query 此时还没有加 options/limit/offset，非常适合做计数
-    count_query = select(func.count()).select_from(base_query.subquery())
-    # 或者更直接的方式 (取决于 SQLAlchemy 版本，2.0+ 推荐下面这种)
-    # total_stmt = select(func.count()).select_from(House).where(*base_query._where_criteria)
-    # 但最稳妥的方式是复用 base_query 的结构：
+    query = query.offset((params.get('page', 1) - 1) * params.get('page_size', 10)).limit(params.get('page_size', 10))
 
     # SQLAlchemy 2.0 标准写法：
     total_stmt = select(func.count()).select_from(base_query.subquery())
@@ -167,6 +151,18 @@ async def get_house_by_id(
     query = select(House).where(House.house_id == house_id)
     house = await db.execute(query)
     return house.scalars().first()
+
+
+# 获取批量id的房源信息
+async def get_houses_by_ids(
+        db: AsyncSession,
+):
+    # 获取推荐房源
+    ids_list = get_recommend_houses_list() or [425, 652, 982, 981, 8, 1000, 5, 9, 10, 13, 14, 15, 16, 18, 19, 20, 22, 25, 26, 27, 28, 2, 30, 31, 32, 33, 34, 36, 37, 38]
+    print(ids_list)
+    query = select(House).where(House.house_id.in_(ids_list))
+    houses = await db.execute(query)
+    return houses.scalars().all()
 
 
 # 更改房源审核状态

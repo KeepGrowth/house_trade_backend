@@ -17,6 +17,7 @@ class HouseCreate(BaseModel):
     price: Optional[float] = Field(None, alias="price")
     area: Optional[float] = Field(None, alias="area")
     house_type: Optional[str] = Field(None, alias="houseType")
+    house_type_label: Optional[str] = Field(None, alias="houseTypeLabel")
     district: Optional[str] = Field(None, alias="district")
     community: Optional[str] = Field(None, alias="community")
     sale_status: Optional[int] = Field(None, alias="saleStatus")
@@ -32,7 +33,7 @@ class HouseCreate(BaseModel):
 
 
 # 房源图片相应数据
-class HouseImageReponse(BaseModel):
+class HouseImageResponse(BaseModel):
     image_id: Optional[int] = Field(None, alias="imageId")
     house_id: Optional[int] = Field(None, alias="houseId")
     image_url: Optional[str] = Field(None, alias="imageUrl")
@@ -48,7 +49,7 @@ class HouseResponse(HouseCreate):
     create_time: Optional[datetime] = Field(None, alias="createTime")
     seller_info: Optional[dict] = Field(None, alias="sellerInfo")
     review_info: Optional[List] = Field(None, alias="reviewInfo")
-    images: Optional[List[HouseImageReponse]] = Field(None, alias="imageUrls")
+    images: Optional[List[HouseImageResponse]] = Field(None, alias="imageUrls")
     audit_status: Optional[int] = Field(None, alias="auditStatus")
 
     model_config = ConfigDict(
@@ -61,7 +62,7 @@ class HouseResponse(HouseCreate):
 class HouseListResponse(BaseModel):
     houses: list[HouseResponse] = Field(None, alias="houses")
     total: int = Field(None, alias="total")
-    images: Optional[List[HouseImageReponse]] = Field(None, alias="imageUrls")
+    images: Optional[List[HouseImageResponse]] = Field(None, alias="imageUrls")
     model_config = ConfigDict(
         populate_by_name=True,  # alias 、字段名兼容
         from_attributes=True  # 允许从ORM对象属性中取值

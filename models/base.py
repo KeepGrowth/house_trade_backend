@@ -60,7 +60,21 @@ class House(Base):
     title = Column(String(100), nullable=False, comment="房源标题")
     price = Column(DECIMAL(10, 2), nullable=False, comment="总价（万元）")
     area = Column(DECIMAL(6, 2), nullable=False, comment="面积（㎡）")
-    house_type = Column(String(20), comment="户型（如：3室2厅）")
+    house_type: Mapped[int] = Column(String(20), comment="户型（如：3室2厅）")
+    # 定义映射字典
+    HOUSE_TYPE_MAP = {
+        "1": "1室1厅",
+        "2": "2室1厅",
+        "3": "2室2厅",
+        "4": "4室及以上"
+    }
+
+    @property
+    def house_type_label(self) -> str:
+        """
+        将数据库存储的数字转换为中文标签
+        """
+        return self.HOUSE_TYPE_MAP.get(self.house_type, "未知户型")
     district = Column(String(30), comment="所在区域")
     community = Column(String(50), comment="小区名称")
     sale_status = Column(SmallInteger, default=1, comment="状态：1-在售, 2-已售, 3-已下架")
@@ -74,7 +88,7 @@ class House(Base):
 
     # 一个房源有多张图片
     images: Mapped[List["HouseImage"]] = relationship("HouseImage", back_populates="house",
-                                                      cascade="all, delete-orphan",lazy="selectin")
+                                                      cascade="all, delete-orphan", lazy="selectin")
 
     # 一个房源被多个用户收藏
     favorited_by: Mapped[List["Favorite"]] = relationship("Favorite", back_populates="house",

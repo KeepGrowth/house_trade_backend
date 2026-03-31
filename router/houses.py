@@ -13,6 +13,7 @@ from schemas.house import *
 from schemas.reviews import ReviewCreate, ReviewResponse
 from schemas.users import SafeUserResponse
 from utils.response import *
+from utils.itemCF import get_recommend_houses_list
 
 # 导入你已有的模型、CRUD、Pydantic
 
@@ -45,9 +46,11 @@ async def get_recommend_houses_api(
     """获取推荐房源"""
     if params is None:
         params = {}
-    total, houses = await get_houses(db, params=params)
+    params['page'] = 1
+    params['page_size'] = 30
+    houses = await get_houses_by_ids(db)
     houses_list = [HouseResponse().model_validate(house) for house in houses]
-    res_data = HouseListResponse(houses=houses_list, total=total)
+    res_data = HouseListResponse(houses=houses_list)
     return success_response(message="获取成功", data=res_data)
 
 
@@ -60,6 +63,7 @@ async def get_recommend_houses_api(
     """条件查询房源"""
     if params is None:
         params = {}
+    print(params)
     total, houses = await get_houses(db, params=params)
     houses_list = [HouseResponse().model_validate(house) for house in houses]
     res_data = HouseListResponse(houses=houses_list, total=total)

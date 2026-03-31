@@ -54,28 +54,45 @@ async def get_reviews(
 ):
     """
     条件查询评价列表
-    :param db:
-    :param params:
-    :return:
     """
-    query = Select(Review)
-    total_stmt = Select(func.count(Review.review_id))
-    total = await db.execute(total_stmt)
-    if params.get('house_id'):
-        query = query.where(Review.house_id == params.get('house_id'))
-        total = await db.execute(Select(Review).where(Review.house_id == params.get('house_id')))
-    if params.get('user_id'):
-        query = query.where(Review.user_id == params.get('user_id'))
-        total = await db.execute(Select(Review).where(Review.user_id == params.get('user_id')))
-    if params.get('status'):
-        query = query.where(Review.status == params.get('status'))
-        total = await db.execute(Select(Review).where(Review.status == params.get('status')))
+    if not params:
+        params = {}
 
-    # 构建分页查询:page,page_size
-    query = query.offset(params.get('page')).limit(params.get('pageSize'))
-    query = query.order_by(Review.create_time.desc())
-    reviews = await db.execute(query)
-    return total.scalar_one(), reviews.scalars().all()
+    # 1. 构建基础查询对象
+    stmt = Select(Review)
+    count_stmt = Select(func.count(Review.review_id))
+
+    # 2. 动态拼接筛选条件
+    if params.get('house_id'):
+        stmt = stmt.where(Review.house_id == params['house_id'])
+        count_stmt = count_stmt.where(Review.house_id == params['house_id'])
+
+    if params.get('user_id'):
+        stmt = stmt.where(Review.user_id == params['user_id'])
+        count_stmt = count_stmt.where(Review.user_id == params['user_id'])
+
+    if params.get('status'):
+        stmt = stmt.where(Review.status == params['status'])
+        count_stmt = count_stmt.where(Review.status == params['status'])
+
+    # 3. 先查询总条数
+    total_result = await db.execute(count_stmt)
+    total = total_result.scalar_one()  # 获取总数 (int)
+
+    # 4. 处理分页
+    page = int(params.get('page', 1))  # 默认第1页
+    page_size = int(params.get('pageSize', 10))  # 默认每页10条
+
+    # 计算偏移量: (页码 - 1) * 每页条数
+    offset = (page - 1) * page_size
+
+    stmt = stmt.offset(offset).limit(page_size).order_by(Review.create_time.desc())
+
+    # 5. 查询列表数据
+    result = await db.execute(stmt)
+    reviews = result.scalars().all()
+
+    return total, reviews
 
 
 # 查询评价

@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
@@ -13,6 +14,7 @@ from models.base import User
 from schemas.house import *
 from schemas.reviews import ReviewCreate, ReviewResponse
 from schemas.users import SafeUserResponse
+from utils.ai_analyse import chat_with_ollama, chat_with_ollama1
 from utils.response import *
 
 # 导入你已有的模型、CRUD、Pydantic
@@ -76,3 +78,47 @@ async def get_users_api(
     x_axis = user_frame.index.tolist()
     y_axis = user_frame['id'].tolist()
     return success_response(message="获取成功", data=user_frame.to_dict())
+
+
+# 获取AI统计信息
+@router.get("/ai-stats", summary="获取AI总结的统计信息")
+async def get_ai_stats(
+        current_user: int = Depends(utils.auth.get_current_user),
+        db: AsyncSession = Depends(get_database)
+):
+    """
+    获取AI总结的统计信息
+    :param current_user:
+    :param db:
+    :return:
+    """
+    # 获取用户总数、近一周新增用户数
+    total_users = await get_all_users(db)
+    user_models = [SafeUserResponse.model_validate(user) for user in total_users]
+    user_dicts = [model.model_dump() for model in user_models]
+    user_frame = pd.DataFrame(user_dicts)
+    # 统计用户总数
+    total_users = len(user_frame)
+    print(user_frame)
+    # 统计近一周新增用户数
+    total_new_users = user_frame[user_frame['create_time'] > (datetime.now() - timedelta(days=7))]['user_id'].count()
+
+    # 在售房源数、近一周审核通过的房源数
+    total,total_houses = await get_houses(db, params={"audit_status": 1})
+    house_model = [HouseResponse.model_validate(house) for house in total_houses]
+    house_dicts = [model.model_dump() for model in house_model]
+    house_frame = pd.DataFrame(house_dicts)
+    total_houses = len(house_frame)
+
+    # 让AI生成响应对话
+    prompt = f"""
+    用户总数：{total_users},
+    近一周新增用户数：{total_new_users},
+    在售房源数：{total_houses},
+    近一周审核通过的房源数：{total_houses},
+    """
+    result = await chat_with_ollama1("deepseek-r1:1.5b", prompt)
+    print(result)
+    return success_response(message="获取成功", data={
+        'text': result,
+    })

@@ -69,8 +69,8 @@ async def get_pending_houses_api(
     page = params.page
     page_size = params.page_size
     print(params)
-    total, houses = await get_houses(db, page, page_size,
-                                     params=params.model_dump(exclude={"page", "page_size"}, exclude_unset=True,
+    total, houses = await get_houses(db,
+                                     params=params.model_dump(exclude_unset=True,
                                                               exclude_none=True))
     houses_list = [HouseResponse().model_validate(house) for house in houses]
     res_data = HouseListResponse(houses=houses_list, total=total)
