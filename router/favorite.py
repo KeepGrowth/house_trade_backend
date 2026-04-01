@@ -1,10 +1,10 @@
 import os
 
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Path
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Path, Body
 
 import utils.auth
 from config.mysql_config import *
-from crud.favorite import get_my_favorites, delete_favorite
+from crud.favorite import get_my_favorites, delete_favorite, add_favorite, get_favorite_by_id
 from schemas.favorite import FavoriteResponse, FavoriteListResponse
 from utils.response import *
 
@@ -25,7 +25,6 @@ async def get_favorite_houses_api(
 ):
     """获取收藏列表"""
     total, favorites = await get_my_favorites(db, current_user)
-    print(favorites[0].__dict__)
     houses_list = [FavoriteResponse().model_validate(favorite) for favorite in favorites]
     res_data = FavoriteListResponse(favorites=houses_list, total=total)
     return success_response(message="获取成功", data=res_data)
@@ -45,3 +44,23 @@ async def delete_favorite_api(
         return success_response(message="删除成功")
     else:
         return error_response(message="删除失败")
+
+
+# 添加收藏记录
+@router.post("/", summary="添加收藏记录", status_code=status.HTTP_200_OK)
+async def add_favorite_api(
+        houseId: int = Body(..., title="房屋ID"),
+        current_user: int = Depends(utils.auth.get_current_user),
+        db: AsyncSession = Depends(get_database)
+):
+    """添加收藏记录"""
+    record = await get_favorite_by_id(db, houseId)
+    if record:
+        # 删除收藏记录
+        res = await delete_favorite(db, houseId, current_user)
+        return success_response(message="删除成功")
+    favorite_result = await add_favorite(db, houseId, current_user)
+    if favorite_result:
+        return success_response(message="添加成功")
+    else:
+        return error_response(message="添加失败")

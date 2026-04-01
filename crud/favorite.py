@@ -41,6 +41,20 @@ async def delete_favorite(
         user_id: int
 ):
     favorite = await get_favorite_by_id(db, favorite_id)
+    if not favorite:
+        return None
     await db.delete(favorite)
+    await db.commit()
+    return await get_user_by_id(db, user_id)
+
+
+# 新增收藏记录
+async def add_favorite(
+        db: AsyncSession,
+        house_id: int,
+        user_id: int
+):
+    favorite = Favorite(house_id=house_id, user_id=user_id)
+    db.add(favorite)
     await db.commit()
     return await get_user_by_id(db, user_id)

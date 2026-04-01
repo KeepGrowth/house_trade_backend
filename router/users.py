@@ -52,40 +52,6 @@ async def update_profile_api(
     return success_response(message="修改成功", data=res_data)
 
 
-# 上传用户头像
-@router.post("/avatar", summary="上传用户头像", status_code=status.HTTP_200_OK)
-async def upload_avatar_api(
-        file: UploadFile = File(...),
-        current_user: User = Depends(utils.auth.get_current_user),
-        db: AsyncSession = Depends(get_database)
-):
-    """上传用户头像"""
-    # 获取文件名
-    filename = file.filename
-    # 获取文件内容
-    file_content = await file.read()
-    # 保存文件
-    file_path = os.path.join()
-    if await save_file(file_path, file_content):
-        # 保存成功
-        # 更新用户头像
-        await update_user_avatar(db, current_user.user_id, filename)
-        return success_response(message="上传成功")
-    else:
-        # 保存失败
-        return error_response(message="上传失败")
-
-
-# 获取我的收藏列表
-@router.get("/my-favorites", summary="获取我的收藏列表", status_code=status.HTTP_200_OK)
-async def get_my_favorites_api(
-        current_user: User = Depends(utils.auth.get_current_user),
-        db: AsyncSession = Depends(get_database)
-):
-    """获取我的收藏列表"""
-    favorites = await get_user_favorites(db, current_user.user_id)
-    res_data = [HouseFavoriteResponse().model_validate(favorite) for favorite in favorites]
-    return success_response(message="获取成功", data=res_data)
 
 
 # 获取我发布的房源列表
