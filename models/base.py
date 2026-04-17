@@ -61,6 +61,10 @@ class House(Base):
     price = Column(DECIMAL(10, 2), nullable=False, comment="总价（万元）")
     area = Column(DECIMAL(6, 2), nullable=False, comment="面积（㎡）")
     house_type: Mapped[int] = Column(String(20), comment="户型（如：3室2厅）")
+    # 房源描述
+    house_desc: Mapped[str] = Column(Text, comment="房源描述", nullable=True)
+    # 房源驳回理由
+    reject_reason: Mapped[str] = Column(Text, comment="驳回理由", nullable=True)
     # 定义映射字典
     HOUSE_TYPE_MAP = {
         "1": "1室1厅",
@@ -75,6 +79,7 @@ class House(Base):
         将数据库存储的数字转换为中文标签
         """
         return self.HOUSE_TYPE_MAP.get(self.house_type, "未知户型")
+
     district = Column(String(30), comment="所在区域")
     community = Column(String(50), comment="小区名称")
     sale_status = Column(SmallInteger, default=1, comment="状态：1-在售, 2-已售, 3-已下架")

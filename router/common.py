@@ -15,14 +15,3 @@ router = APIRouter(
     responses={404: {"description": "未找到"}},
 )
 
-
-# 通用文件上传接口
-@router.post("/upload", summary="通用文件上传接口", status_code=status.HTTP_200_OK)
-async def upload_api(
-        files: List[UploadFile] = File(...),
-        current_user: User = Depends(utils.auth.get_current_user),
-        db: AsyncSession = Depends(get_database)
-):
-    """通用文件上传接口"""
-    urls = await upload_files(files)
-    return success_response(message="上传成功", data=urls)

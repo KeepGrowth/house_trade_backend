@@ -52,8 +52,6 @@ async def update_profile_api(
     return success_response(message="修改成功", data=res_data)
 
 
-
-
 # 获取我发布的房源列表
 @router.get("/my-houses", summary="获取我发布的房源列表", status_code=status.HTTP_200_OK)
 async def get_my_houses_api(

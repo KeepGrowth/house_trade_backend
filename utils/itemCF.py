@@ -116,14 +116,11 @@ def get_recommend_houses_list():
         # 4. 打印结果
         print(f"\n--- 针对房源 {TARGET_HOUSE_ID} 的 Top {TOP_N} 相似房源推荐 ---")
         if isinstance(result, pd.Series):
-            print(result)
             # 将index转为房源id列表
             result = result.index.tolist()
-            print(result)
         else:
-            print(result)
             return None
+
 
 if __name__ == "__main__":
     get_recommend_houses_list()
-

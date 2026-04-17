@@ -45,7 +45,6 @@ async def get_reviews_api(
     """条件分页查询评价列表"""
     if params is None:
         params = {}
-    print(params)
     total, reviews = await get_reviews(db, params=params)
     reviews_list = [ReviewResponse().model_validate(review) for review in reviews]
     res_data = ReviewListResponse(reviews=reviews_list, total=total)

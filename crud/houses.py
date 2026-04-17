@@ -158,28 +158,30 @@ async def get_houses_by_ids(
         db: AsyncSession,
 ):
     # 获取推荐房源
-    ids_list = get_recommend_houses_list() or [425, 652, 982, 981, 8, 1000, 5, 9, 10, 13, 14, 15, 16, 18, 19, 20, 22, 25, 26, 27, 28, 2, 30, 31, 32, 33, 34, 36, 37, 38]
-    print(ids_list)
+    ids_list = get_recommend_houses_list() or []
     query = select(House).where(House.house_id.in_(ids_list))
     houses = await db.execute(query)
-    return houses.scalars().all()
+    return houses.scalars().all() or await get_all_houses(db)
 
 
 # 更改房源审核状态
 async def update_house_audit_status(
         db: AsyncSession,
         house_id: int,
-        audit_status: int
+        audit_status: int,
+        reject_reason: str = ''
 ):
     """
     更改房源审核状态
     :param db:
     :param house_id:
     :param audit_status:
+    :param reject_reason:
     :return:
     """
     house = await get_house_by_id(db, house_id)
     house.audit_status = audit_status
+    house.reject_reason = reject_reason
     await db.commit()
     return house
 

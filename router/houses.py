@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 
 import utils.auth
 from config.mysql_config import *
+from crud.favorite import get_by_user_house_id
 from crud.house_images import create_house_image
 from crud.houses import *
 from crud.reviews import create_house_review, get_house_reviews
@@ -74,22 +75,30 @@ async def get_recommend_houses_api(
 @router.get("/{house_id}", summary="获取房源详情", status_code=status.HTTP_200_OK)
 async def get_house_api(
         house_id: int,
-        db: AsyncSession = Depends(get_database)
+        db: AsyncSession = Depends(get_database),
+        current_user_id: int = Depends(utils.auth.get_current_user),
 ):
     """获取房源详情"""
     house = await get_house_by_id(db, house_id)
     if not house:
         raise HTTPException(status_code=400, detail="房源不存在")
 
+    # 售卖者信息
     seller_info = await get_user_by_id(db, house.user_id)
     seller_info = SafeUserResponse().model_validate(seller_info)
 
+    # 评价信息
     review_list = await get_house_reviews(db, house_id)
     review_list = [ReviewResponse().model_validate(review) for review in review_list]
+
+    # 是否被此用户收藏
+    result = await get_by_user_house_id(db, current_user_id, house_id)
+    is_favorite = 1 if result else 0
 
     res_data = HouseResponse().model_validate(house)
     res_data.seller_info = seller_info
     res_data.review_info = review_list
+    res_data.is_favorite = is_favorite
     return success_response(message="获取成功", data=res_data)
 
 
@@ -112,7 +121,6 @@ async def create_house_api(
         db: AsyncSession = Depends(get_database)
 ):
     """发布新房源"""
-    print(house)
     new_house = await create_house(db, house.model_dump(exclude_unset=True, exclude_none=True, exclude={'image_urls'}),
                                    current_user)
 

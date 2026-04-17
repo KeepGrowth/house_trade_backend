@@ -20,6 +20,8 @@ class HouseCreate(BaseModel):
     house_type_label: Optional[str] = Field(None, alias="houseTypeLabel")
     district: Optional[str] = Field(None, alias="district")
     community: Optional[str] = Field(None, alias="community")
+    # 房源描述
+    house_desc: Optional[str] = Field(None, alias="houseDesc")
     sale_status: Optional[int] = Field(None, alias="saleStatus")
     audit_status: Optional[int] = Field(None, alias="auditStatus")
 
@@ -49,8 +51,11 @@ class HouseResponse(HouseCreate):
     create_time: Optional[datetime] = Field(None, alias="createTime")
     seller_info: Optional[dict] = Field(None, alias="sellerInfo")
     review_info: Optional[List] = Field(None, alias="reviewInfo")
+    is_favorite: Optional[int] = Field(None, alias="isFavorite")
     images: Optional[List[HouseImageResponse]] = Field(None, alias="imageUrls")
+    reject_reason: Optional[str] = Field(None, alias="rejectReason")
     audit_status: Optional[int] = Field(None, alias="auditStatus")
+    house_type_label: Optional[str] = Field(None, alias="houseTypeLabel")
 
     model_config = ConfigDict(
         populate_by_name=True,  # alias 、字段名兼容
