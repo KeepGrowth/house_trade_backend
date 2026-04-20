@@ -32,7 +32,7 @@ app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 # cors跨域中间件
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # 允许访问的源，开发允许所有，生产环境需要指定。
+    allow_origins=["http://localhost:5173","https://859707243.xyz:21353"],  # 允许访问的源，开发允许所有，生产环境需要指定。
     allow_credentials=True,  # 允许携带cookie
     allow_methods=["*"],  # 允许所有请求方法
     allow_headers=["*"],  # 允许所有请求头，token放置的地方。
