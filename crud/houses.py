@@ -153,12 +153,23 @@ async def get_house_by_id(
     return house.scalars().first()
 
 
+# 取status为1的房源的id
+async def get_houses_ids(
+        db: AsyncSession,
+):
+    stmt = select(House.house_id).where(House.sale_status == 1)
+    houses_ids = await db.execute(stmt)
+    ids_list = houses_ids.scalars().fetchmany(30)
+    ids_list = [int(id) for id in ids_list]
+    return ids_list
+
+
 # 获取批量id的房源信息
 async def get_houses_by_ids(
         db: AsyncSession,
 ):
     # 获取推荐房源
-    ids_list = get_recommend_houses_list() or []
+    ids_list = get_recommend_houses_list() or await get_houses_ids(db)
     query = select(House).where(House.house_id.in_(ids_list))
     houses = await db.execute(query)
     return houses.scalars().all() or await get_all_houses(db)

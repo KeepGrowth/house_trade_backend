@@ -9,7 +9,7 @@ from starlette.staticfiles import StaticFiles
 
 from config.mysql_config import lifespan
 from crud.house_images import create_house_image
-from router import auth, users, houses, admin, reviews, dashboard, favorite
+from router import auth, users, houses, admin, reviews, dashboard, favorite, posts, replies
 from utils.auth import get_current_user
 from utils.response import success_response
 
@@ -22,6 +22,8 @@ app.include_router(admin.router)
 app.include_router(reviews.router)
 app.include_router(dashboard.router)
 app.include_router(favorite.router)
+app.include_router(posts.router)
+app.include_router(replies.router)
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -32,7 +34,7 @@ app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 # cors跨域中间件
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173","https://859707243.xyz:21353"],  # 允许访问的源，开发允许所有，生产环境需要指定。
+    allow_origins=["http://localhost:5173", "https://859707243.xyz:21353","http://localhost:8083"],  # 允许访问的源，开发允许所有，生产环境需要指定。
     allow_credentials=True,  # 允许携带cookie
     allow_methods=["*"],  # 允许所有请求方法
     allow_headers=["*"],  # 允许所有请求头，token放置的地方。
@@ -128,4 +130,5 @@ async def upload_image(
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="localhost", port=8086)

@@ -46,6 +46,10 @@ class User(Base):
 
     # 一个用户发表多条评价
     reviews: Mapped[List["Review"]] = relationship("Review", back_populates="user")
+    # 一个用户发布多条帖子
+    posts: Mapped[List["Posts"]] = relationship("Posts", back_populates="user")
+    # 一个用户发表多条回复
+    replies: Mapped[List["Replies"]] = relationship("Replies", back_populates="user")
 
     def __repr__(self):
         return f"<User(user_id={self.user_id}, username='{self.username}', role={self.role})>"
@@ -86,6 +90,8 @@ class House(Base):
     audit_status = Column(SmallInteger, default=0, comment="审核状态：0-待审, 1-通过, 2-驳回")
     # 补充创建时间，方便排序，虽然文档未明确列出但通常需要
     create_time = Column(DateTime, default=datetime.now)
+    posts: Mapped[List["Posts"]] = relationship("Posts", back_populates="house",
+                                                lazy="selectin")
 
     # --- 反向映射关系 ---
     # 关联到用户 (多对一)
@@ -157,3 +163,36 @@ class Review(Base):
 
     def __repr__(self):
         return f"<Review(review_id={self.review_id}, score={self.score})>"
+
+
+# 6. 帖子表
+class Posts(Base):
+    __tablename__ = "posts"
+    post_id = Column(Integer, primary_key=True, autoincrement=True, comment="帖子ID")
+    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False, comment="关联用户ID")
+    house_id = Column(Integer, ForeignKey("houses.house_id"), nullable=False, comment="关联房源ID")
+    title = Column(String(100), nullable=False, comment="帖子标题")
+    content = Column(Text, nullable=False, comment="帖子内容")
+    create_time = Column(DateTime, default=datetime.now, comment="创建时间")
+    update_time = Column(DateTime, default=datetime.now, comment="更新时间")
+    status = Column(SmallInteger, default=1, comment="状态：1-正常, 0-禁用")
+
+    # 关系映射
+    user: Mapped["User"] = relationship("User", back_populates="posts", lazy="selectin")
+    house: Mapped["House"] = relationship("House", back_populates="posts", lazy="selectin")
+    replies: Mapped[List["Replies"]] = relationship("Replies", back_populates="post", lazy="selectin")
+
+
+# 7. 回复表
+class Replies(Base):
+    __tablename__ = "replies"
+    reply_id = Column(Integer, primary_key=True, autoincrement=True, comment="回复ID")
+    post_id = Column(Integer, ForeignKey("posts.post_id"), nullable=False, comment="关联帖子ID")
+    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False, comment="关联用户ID")
+    content = Column(Text, nullable=False, comment="回复内容")
+    create_time = Column(DateTime, default=datetime.now, comment="创建时间")
+    update_time = Column(DateTime, default=datetime.now, comment="更新时间")
+
+    # 关系映射
+    post: Mapped["Posts"] = relationship("Posts", back_populates="replies")
+    user: Mapped["User"] = relationship("User", back_populates="replies")

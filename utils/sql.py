@@ -1,5 +1,5 @@
 from typing import Tuple, List, Type, Optional
-from sqlalchemy import select, func, delete
+from sqlalchemy import select, func, delete, inspect, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 from fastapi import HTTPException
@@ -152,3 +152,73 @@ async def add(
     await db.commit()
     await db.refresh(item)
     return item
+
+
+# 通用条件分页查询方法
+async def common_query_list(
+        db: AsyncSession,
+        query_params: dict,
+        total_stmt,
+        list_stmt,
+        model: Type[DeclarativeBase],
+):
+    """
+    分页条件查询模型数据列表
+    :param db:
+    :param query_params:
+    :param model:SQLALCHEMY模型对象
+    :return:
+    """
+    # 2. 定义允许的筛选字段白名单，防止非法字段注入
+    mapper = inspect(model)
+    allow_filter_keys = [key for key, value in mapper.columns.items()]
+    print("允许查询的参数", allow_filter_keys)
+    # 3. 提取并处理分页参数
+    # 获取页码，默认为 1
+    page = query_params.get('page', 1)
+    try:
+        page = int(page)
+        page = max(1, page)  # 保证页码至少为 1
+    except (ValueError, TypeError):
+        page = 1
+
+    # 获取每页数量，默认为 10
+    page_size = query_params.get('page_size', 10)
+    try:
+        page_size = int(page_size)
+        # 限制最大每页数量，防止恶意请求过大导致数据库压力
+        page_size = min(page_size, 100)
+    except (ValueError, TypeError):
+        page_size = 10
+
+    # 计算偏移量 (offset = (页码 - 1) * 每页数量)
+    offset = (page - 1) * page_size
+
+    # 提取筛选条件
+    query_params.pop('page', None)
+    query_params.pop('page_size', None)
+    filter_conditions = []
+    # 遍历筛选条件，只处理白名单内的字段
+    for key in query_params.keys():
+        value = query_params[key]
+
+        model_field = getattr(model, key)
+        filter_conditions.append(model_field == value)
+    # 4. 如果有筛选条件，添加到查询语句中
+    if filter_conditions:
+        total_stmt = total_stmt.where(and_(*filter_conditions))
+        list_stmt = list_stmt.where(and_(*filter_conditions))
+
+    # 5. 分页
+    list_stmt = list_stmt.offset(offset).limit(page_size).order_by(model.create_time.desc())
+
+    # 6. 执行数据库查询（异步执行）
+    # 获取总数
+    total_result = await db.execute(total_stmt)
+    total = total_result.scalar() or 0  # 提取总数的标量值
+
+    # 获取列表数据
+    list_result = await db.execute(list_stmt)
+    model_instance_list = list_result.scalars().all() or []
+    # 7. 返回结果
+    return total, model_instance_list

@@ -47,8 +47,6 @@ async def get_recommend_houses_api(
     """获取推荐房源"""
     if params is None:
         params = {}
-    params['page'] = 1
-    params['page_size'] = 30
     houses = await get_houses_by_ids(db)
     houses_list = [HouseResponse().model_validate(house) for house in houses]
     res_data = HouseListResponse(houses=houses_list)
