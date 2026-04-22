@@ -1,8 +1,8 @@
 # ------------------------------
 # Pydantic 模型（用于接口参数）
 # ------------------------------
-from datetime import datetime
-from typing import Optional, List
+from datetime import datetime, date
+from typing import Optional, List, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -30,6 +30,13 @@ class UserCreate(BaseModel):
         populate_by_name=True,  # alias 、字段名兼容
         from_attributes=True  # 允许从ORM对象属性中取值
     )
+
+
+class UsersQueryParams(BaseModel):
+    page: Union[int, None] = Field(None, alias="page")
+    page_size: Union[int, None] = Field(None, alias="pageSize")
+    start_date: Optional[date] = Field(None, alias="startDate")
+    end_date: Optional[date] = Field(None, alias="endDate")
 
 
 class UserUpdate(BaseModel):

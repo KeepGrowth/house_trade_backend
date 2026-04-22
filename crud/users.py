@@ -1,11 +1,12 @@
 # 1. 创建用户
 from typing import List, Optional
 
-from sqlalchemy import select, func
+from sqlalchemy import select, func, cast, Date
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.base import User
 from schemas.users import UserCreate, UserUpdate
+from utils.sql import common_query_list
 
 
 # 1. 创建用户
@@ -75,6 +76,26 @@ async def get_users(
     total_query = select(func.count(User.user_id)).select_from(User)
     total = await db.execute(total_query)
     return total.scalar_one(), result.scalars().all()
+
+
+# 条件查询-分页
+async def query_users(
+        db: AsyncSession,
+        query_params: dict
+):
+    """
+    条件查询用户数据-带分页。
+    :param db:
+    :param query_params:
+    :return:
+    """
+    list_stmt = select(User)
+    if query_params.get('start_date'):
+        list_stmt = list_stmt.where(cast(User.create_time, Date) >= query_params.get('start_date'))
+    if query_params.get('end_date'):
+        list_stmt = list_stmt.where(cast(User.create_time, Date) <= query_params.get('end_date'))
+    total_stmt = select(func.count(User.user_id))
+    return await common_query_list(db, query_params, total_stmt, list_stmt, User)
 
 
 # 6. 更新用户信息

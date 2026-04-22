@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from fastapi import Body
-from sqlalchemy import select, func
+from sqlalchemy import select, func, cast, Date
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -45,6 +45,10 @@ async def query_orders(
         query_params: dict,
 ):
     list_stmt = select(Orders)
+    if query_params.get('start_date'):
+        list_stmt = list_stmt.where(cast(Orders.create_time, Date) >= query_params.get('start_date'))
+    if query_params.get('end_date'):
+        list_stmt = list_stmt.where(cast(Orders.create_time, Date) <= query_params.get('end_date'))
     total_stmt = select(func.count(Orders.id))
     return await common_query_list(db, query_params, total_stmt, list_stmt, Orders)
 
@@ -63,3 +67,12 @@ async def get_order_by_id(
         order_id: int,
 ):
     return await sql.get_by_id(db, Orders, order_id)
+
+
+# 查询所有
+async def get_all_orders(
+        db: AsyncSession,
+):
+    stmt = select(Orders)
+    result = await db.execute(stmt)
+    return result.scalars().all()

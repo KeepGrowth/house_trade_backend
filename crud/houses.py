@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from fastapi import Body
-from sqlalchemy import select, func
+from sqlalchemy import select, func, Date, cast
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -9,6 +9,7 @@ from crud.users import get_user_by_id
 from models.base import House, Review
 from utils import sql
 from utils.itemCF import get_recommend_houses_list
+from utils.sql import common_query_list
 
 
 # 获取所有房源
@@ -136,6 +137,26 @@ async def get_houses(
     houses = result.scalars().all()
 
     return total, houses
+
+
+# 条件-分页查询获取房源列表
+async def query_houses(
+        db: AsyncSession,
+        query_params: dict
+):
+    """
+    条件查询用户数据-带分页。
+    :param db:
+    :param query_params:
+    :return:
+    """
+    list_stmt = select(House)
+    if query_params.get('start_date'):
+        list_stmt = list_stmt.where(cast(House.create_time, Date) >= query_params.get('start_date'))
+    if query_params.get('end_date'):
+        list_stmt = list_stmt.where(cast(House.create_time, Date) <= query_params.get('end_date'))
+    total_stmt = select(func.count(House.house_id))
+    return await common_query_list(db, query_params, total_stmt, list_stmt, House)
 
 
 # 更新房源

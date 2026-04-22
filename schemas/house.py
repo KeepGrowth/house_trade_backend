@@ -1,8 +1,8 @@
 # ------------------------------
 # Pydantic 模型（用于接口参数）
 # ------------------------------
-from datetime import datetime
-from typing import Optional, List
+from datetime import datetime, date
+from typing import Optional, List, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -32,6 +32,14 @@ class HouseCreate(BaseModel):
         populate_by_name=True,  # alias 、字段名兼容
         from_attributes=True  # 允许从ORM对象属性中取值
     )
+
+
+# 查询数据
+class HouseQueryParams(HouseCreate):
+    page: Union[int, None] = Field(None, alias="page")
+    page_size: Union[int, None] = Field(None, alias="pageSize")
+    start_date: Optional[date] = Field(None, alias="startDate")
+    end_date: Optional[date] = Field(None, alias="endDate")
 
 
 # 房源图片相应数据
@@ -66,7 +74,7 @@ class HouseResponse(HouseCreate):
 # 房源信息列表响应数据模型
 class HouseListResponse(BaseModel):
     houses: list[HouseResponse] = Field(None, alias="houses")
-    total: int = Field(None, alias="total")
+    total: Optional[int] = Field(None, alias="total")
     images: Optional[List[HouseImageResponse]] = Field(None, alias="imageUrls")
     model_config = ConfigDict(
         populate_by_name=True,  # alias 、字段名兼容

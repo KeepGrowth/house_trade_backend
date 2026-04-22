@@ -1,6 +1,6 @@
 import os
 
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query
 
 import utils.auth
 from config.mysql_config import *
@@ -72,14 +72,14 @@ async def get_houses_api(
 @router.get("/recommend", summary="获取推荐房源", status_code=status.HTTP_200_OK)
 async def get_recommend_houses_api(
         db: AsyncSession = Depends(get_database),
-        params: dict = Body(None, title="查询参数")
+        params: HouseQueryParams = Query(...)
 ):
     """获取推荐房源"""
     if params is None:
         params = {}
-    houses = await get_houses_by_ids(db)
+    total, houses = await query_houses(db, params.model_dump(exclude_unset=True, exclude_none=True))
     houses_list = [HouseResponse().model_validate(house) for house in houses]
-    res_data = HouseListResponse(houses=houses_list)
+    res_data = HouseListResponse(houses=houses_list, total=total)
     return success_response(message="获取成功", data=res_data)
 
 
