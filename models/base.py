@@ -2,27 +2,21 @@
 # 基类
 from sqlalchemy.orm import DeclarativeBase
 
-
-class Base(DeclarativeBase):
-    """
-    这个是为了建表方便的基类，所有orm模型都必须继承这个类，才能正常建表。
-    """
-    pass
-
-
 from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy import (
     Column, Integer, String, DECIMAL, DateTime, ForeignKey,
-    Text, SmallInteger, Boolean
+    Text, SmallInteger, Boolean, Float
 )
 from sqlalchemy.orm import DeclarativeBase, relationship, Mapped, mapped_column
 
 
 # 定义基类
 class Base(DeclarativeBase):
-    pass
+    __abstract__ = True
+    create_time: Mapped[datetime] = Column(DateTime, default=datetime.now, comment="创建时间")
+    update_time: Mapped[datetime] = Column(DateTime, default=datetime.now, comment="更新时间", onupdate=datetime.now, )
 
 
 # 1. 用户信息表 (users)
@@ -196,3 +190,13 @@ class Replies(Base):
     # 关系映射
     post: Mapped["Posts"] = relationship("Posts", back_populates="replies")
     user: Mapped["User"] = relationship("User", back_populates="replies")
+
+
+# 8. 二手房交易订单表
+class Orders(Base):
+    __tablename__ = "orders"
+
+    id = Column(Integer, primary_key=True, autoincrement=True, comment="订单ID")
+    seller_id = Column(Integer, ForeignKey("users.user_id"), nullable=False, comment="关联用户ID")
+    buyer_id = Column(Integer, ForeignKey("users.user_id"), nullable=False, comment="关联用户ID")
+    amount = Column(Float, nullable=False, comment="订单金额")

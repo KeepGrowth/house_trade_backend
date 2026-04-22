@@ -7,6 +7,7 @@ from sqlalchemy.orm import selectinload
 
 from crud.users import get_user_by_id
 from models.base import House, Review
+from utils import sql
 from utils.itemCF import get_recommend_houses_list
 
 
@@ -135,6 +136,34 @@ async def get_houses(
     houses = result.scalars().all()
 
     return total, houses
+
+
+# 更新房源
+async def update_house(
+        db: AsyncSession,
+        house: dict,
+):
+    return await sql.update_by_id(db, House, house.get('id'), house)
+
+
+# 更改房源售卖状态
+async def update_house_sale_status(
+        db: AsyncSession,
+        house_id: int,
+        sale_status: int,
+):
+    """
+    更改房源审核状态
+    :param db:
+    :param house_id:
+    :param sale_status:
+    :return:
+    """
+    house = await get_house_by_id(db, house_id)
+    house.sale_status = sale_status
+    await db.commit()
+    await db.refresh(house)
+    return house
 
 
 # 获取单个房源信息

@@ -15,6 +15,7 @@ from schemas.reviews import ReviewCreate, ReviewResponse
 from schemas.users import SafeUserResponse
 from utils.response import *
 from utils.itemCF import get_recommend_houses_list
+from crud.orders import *
 
 # 导入你已有的模型、CRUD、Pydantic
 
@@ -24,6 +25,35 @@ router = APIRouter(
     tags=["房源模块"],
     responses={404: {"description": "未找到"}},
 )
+
+
+# 买房接口
+@router.post("/buy", summary="买房接口", status_code=status.HTTP_200_OK)
+async def buy_house_api(
+        house_id: int = Body(..., title="房源ID", alias="houseId"),
+        current_user_id: int = Depends(utils.auth.get_current_user),
+        db: AsyncSession = Depends(get_database)
+):
+    """
+    买房接口，购买成功后状态改为已售，
+    :param house_id:
+    :param current_user_id:
+    :param db:
+    :return:
+    """
+    house = await get_house_by_id(db, house_id)
+    if house.sale_status != 1:
+        return error_response(message="此房源已售出或下架")
+    result = await update_house_sale_status(db, house_id, 2)
+    order_dict = {
+        "seller_id": house.user_id,
+        "buyer_id": current_user_id,
+        "amount": house.price
+    }
+    order = await add_orders(db, order_dict)
+    if result and order:
+        return success_response(message="购买成功")
+    return error_response(message="购买失败")
 
 
 # 获取房源列表
@@ -98,17 +128,6 @@ async def get_house_api(
     res_data.review_info = review_list
     res_data.is_favorite = is_favorite
     return success_response(message="获取成功", data=res_data)
-
-
-# # 获取热门区域标签
-# @router.get("/hot-districts", summary="获取热门区域标签", status_code=status.HTTP_200_OK)
-# async def get_hot_districts_api(
-#         db: AsyncSession = Depends(get_database)
-# ):
-#     """获取热门区域标签"""
-#     districts = await get_hot_districts(db)
-#     res_data = [DistrictResponse().model_validate(district) for district in districts]
-#     return success_response(message="获取成功", data=res_data)
 
 
 # 发布新房源
