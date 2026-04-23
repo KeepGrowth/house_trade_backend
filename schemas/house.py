@@ -20,6 +20,8 @@ class HouseCreate(BaseModel):
     house_type_label: Optional[str] = Field(None, alias="houseTypeLabel")
     district: Optional[str] = Field(None, alias="district")
     community: Optional[str] = Field(None, alias="community")
+    # 配套设施
+    amenities: Optional[str] = Field(None, alias="amenities")
     # 房源描述
     house_desc: Optional[str] = Field(None, alias="houseDesc")
     sale_status: Optional[int] = Field(None, alias="saleStatus")

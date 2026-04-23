@@ -81,6 +81,7 @@ class House(Base):
     district = Column(String(30), comment="所在区域")
     community = Column(String(50), comment="小区名称")
     sale_status = Column(SmallInteger, default=1, comment="状态：1-在售, 2-已售, 3-已下架")
+    amenities = Column(Text, nullable=True, comment="配套设施")
     audit_status = Column(SmallInteger, default=0, comment="审核状态：0-待审, 1-通过, 2-驳回")
     # 补充创建时间，方便排序，虽然文档未明确列出但通常需要
     create_time = Column(DateTime, default=datetime.now)
