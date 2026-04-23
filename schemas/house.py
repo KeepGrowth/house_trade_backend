@@ -38,8 +38,12 @@ class HouseCreate(BaseModel):
 class HouseQueryParams(HouseCreate):
     page: Union[int, None] = Field(None, alias="page")
     page_size: Union[int, None] = Field(None, alias="pageSize")
+    # 日期区间
     start_date: Optional[date] = Field(None, alias="startDate")
     end_date: Optional[date] = Field(None, alias="endDate")
+    # 价格区间
+    min_price: Optional[float] = Field(None, alias="minPrice")
+    max_price: Optional[float] = Field(None, alias="maxPrice")
 
 
 # 房源图片相应数据

@@ -17,7 +17,7 @@ class PostAddRequest(BaseModel):
     house_id: Optional[int] = Field(None, alias="houseId")
     title: Optional[str] = Field(None)
     content: Optional[str] = Field(None, alias="content")
-    status: Optional[int] = Field(1, alias="status")
+    status: Optional[int] = Field(None, alias="status")
 
     model_config = ConfigDict(
         populate_by_name=True,  # alias 、字段名兼容

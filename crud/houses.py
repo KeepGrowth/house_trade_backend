@@ -151,10 +151,19 @@ async def query_houses(
     :return:
     """
     list_stmt = select(House)
+    # 时间范围筛选
     if query_params.get('start_date'):
         list_stmt = list_stmt.where(cast(House.create_time, Date) >= query_params.get('start_date'))
     if query_params.get('end_date'):
         list_stmt = list_stmt.where(cast(House.create_time, Date) <= query_params.get('end_date'))
+
+    # 价格范围筛选
+    if query_params.get('min_price'):
+        list_stmt = list_stmt.where(House.price >= query_params.get('min_price'))
+    if query_params.get('max_price'):
+        list_stmt = list_stmt.where(House.price <= query_params.get('max_price'))
+    query_params.pop('min_price', None)
+    query_params.pop('max_price', None)
     total_stmt = select(func.count(House.house_id))
     return await common_query_list(db, query_params, total_stmt, list_stmt, House)
 

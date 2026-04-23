@@ -15,10 +15,8 @@ async def query_posts(
     list_stmt = (select(Posts).options(
         selectinload(Posts.house),
         selectinload(Posts.replies),
-        selectinload(Posts.user),
-    )
-                 .where(Posts.status == 1))
-    total_stmt = select(func.count(Posts.post_id)).where(Posts.status == 1)
+        selectinload(Posts.user)))
+    total_stmt = select(func.count(Posts.post_id))
     return await common_query_list(db, query_params, total_stmt, list_stmt, Posts)
 
 

@@ -56,6 +56,14 @@ async def dashboard_api(
     order_result = await orders.get_all_orders(db)
     order_list = [r.__dict__ for r in order_result]
     order_df = pd.DataFrame(order_list)
+    if len(order_df) == 0:
+        return success_response(message="获取成功", data={
+            "total_users": total_users,
+            "total_houses": total_houses,
+            "total_houses_audit": total_houses_audit,
+            "total_orders_amount": 0,
+            "total_orders_count": 0,
+        })
     total_orders_amount = order_df['amount'].sum()
     total_orders_count = len(order_result)
     return success_response(message="获取成功", data={

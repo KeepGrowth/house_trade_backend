@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Path
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Path, Body
 
 import utils.auth
 from config.mysql_config import *
@@ -66,7 +66,7 @@ async def add_post_api(
         post = PostItemResponse().model_validate(post)
         return success_response(message="添加成功", data=post)
     except Exception as e:
-        return error_response(message='添加房源不存在'+str(e))
+        return error_response(message='添加房源不存在' + str(e))
 
 
 @router.put('/update')
@@ -98,3 +98,20 @@ async def delete_post_api(
     if not result:
         return error_response(message="删除失败")
     return success_response(message="删除成功")
+
+
+# 切换显示隐藏状态x`
+@router.post("/switch_status", summary="切换显示隐藏状态", status_code=status.HTTP_200_OK)
+async def switch_status_api(
+        post_id: int = Body(..., title="评价ID", alias="postId"),
+        current_user_id: int = Depends(utils.auth.get_current_user),
+        db: AsyncSession = Depends(get_database)
+):
+    """切换显示隐藏状态"""
+    post = await get_post_by_id(db, post_id)
+    if not post:
+        raise HTTPException(status_code=400, detail="评价不存在")
+    post.status = 1 if post.status == 0 else 0
+    await db.commit()
+    await db.refresh(post)
+    return success_response(message="切换成功", data=PostItemResponse().model_validate(post))
