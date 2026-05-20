@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  # 服务名称，你可以自定义，比如叫 web, api, app
+  house-trade-api:
+    build: .              # 指定 Dockerfile 所在的目录，. 代表当前目录
+    # 端口映射：宿主机端口:容器内端口
+    ports:
+      - "8889:8080"       # 如果你的 Python 应用运行在 8891 端口
+    container_name: house-trade-api  # 指定容器名称，方便管理
+    restart: always       # 容器退出后自动重启，保证服务高可用
+    user: root        # 将目录权限切换为 root
+
+

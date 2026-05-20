@@ -34,7 +34,7 @@ app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 # cors跨域中间件
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "https://859707243.xyz:21353", "http://localhost:8083"],
+    allow_origins=["http://localhost:5173", "https://859707243.xyz:21353", "http://localhost:8000"],
     # 允许访问的源，开发允许所有，生产环境需要指定。
     allow_credentials=True,  # 允许携带cookie
     allow_methods=["*"],  # 允许所有请求方法
@@ -132,4 +132,4 @@ async def upload_image(
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="localhost", port=8086)
+    uvicorn.run(app, host="localhost", port=8080)
